@@ -8,8 +8,15 @@ import {
   makeAgoricWalletConnection,
   suggestChain,
 } from '@agoric/web-components';
-import { Activity, Heart, UserCircle, Wallet, ClipboardList, User } from 'lucide-react';
-
+import {
+  Activity,
+  Heart,
+  UserCircle,
+  Wallet,
+  ClipboardList,
+  User,
+} from 'lucide-react';
+import { Toaster, toast } from 'react-hot-toast';
 
 const ENDPOINTS = {
   RPC: 'http://localhost:26657',
@@ -70,13 +77,22 @@ const publishPatientData = (patientData: any) => {
     },
     (update: { status: string; data?: unknown }) => {
       if (update.status === 'error') {
-        alert(`Publication error: ${update.data}`);
+        toast.error(`Publication error: ${update.data}`, {
+          duration: 10000,
+          position: 'bottom-right',
+        });
       }
       if (update.status === 'accepted') {
-        alert('Data published successfully');
+        toast.success('Data published successfully', {
+          duration: 10000,
+          position: 'bottom-right',
+        });
       }
       if (update.status === 'refunded') {
-        alert('Publication rejected');
+        toast.error('Publication rejected', {
+          duration: 10000,
+          position: 'bottom-right',
+        });
       }
     },
   );
@@ -104,7 +120,11 @@ const PatientDataForm = () => {
     wallet,
   }));
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -124,7 +144,9 @@ const PatientDataForm = () => {
         {/* Personal Information */}
         <div className="section">
           <div className="section-header">
-            <h2 className="section-title">Personal Information <UserCircle className="icon" /> </h2>
+            <h2 className="section-title">
+              Personal Information <UserCircle className="icon" />{' '}
+            </h2>
           </div>
           <div className="field-grid">
             {/* Patient ID */}
@@ -169,7 +191,10 @@ const PatientDataForm = () => {
         {/* Medical Information */}
         <div className="section">
           <div className="section-header">
-            <h2 className="section-title"> Medical Information <Heart className="icon" /> </h2>
+            <h2 className="section-title">
+              {' '}
+              Medical Information <Heart className="icon" />{' '}
+            </h2>
           </div>
           <div className="field-grid">
             {/* Age */}
@@ -281,13 +306,19 @@ const PatientDataForm = () => {
 
 const PatientTab = () => {
   const [patients, setPatients] = useState<string[]>([]);
-  const [selectedPatientData, setSelectedPatientData] = useState<any | null>(null);
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedPatientData, setSelectedPatientData] = useState<any | null>(
+    null,
+  );
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
+    null,
+  );
 
   // Fetch patient list
   useEffect(() => {
     const fetchPatientList = async () => {
-      const response = await fetch(`${ENDPOINTS.API}/agoric/vstorage/children/published.patientData.patients`);
+      const response = await fetch(
+        `${ENDPOINTS.API}/agoric/vstorage/children/published.patientData.patients`,
+      );
       const data = await response.json();
       setPatients(data.children);
       console.log(data.children);
@@ -298,11 +329,12 @@ const PatientTab = () => {
   // Fetch individual patient data
   const fetchPatientData = async (patientId: string) => {
     setSelectedPatientId(patientId); // Set the selected patient ID
-    const response = await fetch(`${ENDPOINTS.API}/agoric/vstorage/data/published.patientData.patients.${patientId}`);
+    const response = await fetch(
+      `${ENDPOINTS.API}/agoric/vstorage/data/published.patientData.patients.${patientId}`,
+    );
     let data = await response.json();
     const parsedData = JSON.parse(data.value);
     setSelectedPatientData(parsedData.values[0]);
-
   };
 
   return (
@@ -312,7 +344,7 @@ const PatientTab = () => {
           <ClipboardList className="icon" /> Patients List
         </h2>
         <ul className="patient-list">
-          {patients.map((patientId) => (
+          {patients.map(patientId => (
             <li
               key={patientId}
               onClick={() => fetchPatientData(patientId)}
@@ -327,11 +359,11 @@ const PatientTab = () => {
 
       {selectedPatientData && (
         <div className="patient-details">
-          <h3 className="details-title">
-            Patient Details
-          </h3>
+          <h3 className="details-title">Patient Details</h3>
           <div className="details-card">
-            <pre>{JSON.stringify(JSON.parse(selectedPatientData), null, 2)}</pre>
+            <pre>
+              {JSON.stringify(JSON.parse(selectedPatientData), null, 2)}
+            </pre>
           </div>
         </div>
       )}
@@ -347,10 +379,16 @@ export default function App() {
     connectWallet().catch(err => {
       switch (err.message) {
         case 'KEPLR_CONNECTION_ERROR_NO_SMART_WALLET':
-          alert('No smart wallet at that address');
+          toast.error('No smart wallet at that address', {
+            duration: 10000,
+            position: 'bottom-right',
+          });
           break;
         default:
-          alert(err.message);
+          toast.error(err.message, {
+            duration: 10000,
+            position: 'bottom-right',
+          });
       }
     });
   };
@@ -361,6 +399,7 @@ export default function App() {
 
   return (
     <div className="app-container">
+      <Toaster />
       {/* Header */}
       <div className="header">
         <div className="header-content">
@@ -368,10 +407,7 @@ export default function App() {
             <Activity className="icon" />
             <h1 className="title">Patient Data Management</h1>
           </div>
-          <button
-            onClick={tryConnectWallet}
-            className="wallet-button"
-          >
+          <button onClick={tryConnectWallet} className="wallet-button">
             <Wallet className="icon" />
             <span>{wallet?.address ? 'Connected' : 'Connect Wallet'}</span>
           </button>
@@ -389,7 +425,7 @@ export default function App() {
             Submit Patient Data
           </div>
           <div
-            role="tab" 
+            role="tab"
             className={`nav-tab ${activeTab === 'view' ? 'active' : ''}`}
             onClick={() => setActiveTab('view')}
           >
@@ -399,11 +435,7 @@ export default function App() {
         </div>
 
         <div className="tab-content">
-          {activeTab === 'form' ? (
-            <PatientDataForm />
-          ) : (
-            <PatientTab />
-          )}
+          {activeTab === 'form' ? <PatientDataForm /> : <PatientTab />}
         </div>
       </div>
     </div>

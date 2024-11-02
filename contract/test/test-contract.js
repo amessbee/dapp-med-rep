@@ -1,229 +1,185 @@
 /**
- * @file Test basic trading using the Med Rec contract.
+ * @file Test basic data storage using the Med Rec contract.
  */
 // @ts-check
 
 /* eslint-disable import/order -- https://github.com/endojs/endo/issues/1235 */
 import { test as anyTest } from './prepare-test-env-ava.js';
-
 import { createRequire } from 'module';
-import { E, Far } from '@endo/far';
-import { makePromiseKit } from '@endo/promise-kit';
-import { makeCopyBag } from '@endo/patterns';
+import { E } from '@endo/far';
 import { makeNodeBundleCache } from '@endo/bundle-source/cache.js';
 import { makeZoeKitForTest } from '@agoric/zoe/tools/setup-zoe.js';
-import { AmountMath, makeIssuerKit } from '@agoric/ertp';
-
-import { makeStableFaucet } from './mintStable.js';
-import { startpatientDataContract } from '../src/med-rec-proposal.js';
-
-/** @typedef {typeof import('../src/med-rec-contract.js').start} AssetContractFn */
+import { makeMockChainStorageRoot } from '@agoric/internal/src/storage-test-utils.js';
 
 const myRequire = createRequire(import.meta.url);
 const contractPath = myRequire.resolve(`../src/med-rec-contract.js`);
 
-/** @type {import('ava').TestFn<Awaited<ReturnType<makeTestContext>>>} */
 const test = anyTest;
 
-const UNIT6 = 1_000_000n;
-const CENT = UNIT6 / 100n;
-
-/**
- * Tests assume access to the zoe service and that contracts are bundled.
- *
- * See test-bundle-source.js for basic use of bundleSource().
- * Here we use a bundle cache to optimize running tests multiple times.
- *
- * @param {unknown} _t
- */
 const makeTestContext = async _t => {
-  const { zoeService: zoe, feeMintAccess } = makeZoeKitForTest();
-
+  const { zoeService: zoe } = makeZoeKitForTest();
   const bundleCache = await makeNodeBundleCache('bundles/', {}, s => import(s));
-  const bundle = await bundleCache.load(contractPath, 'assetContract');
+  const bundle = await bundleCache.load(contractPath, 'medRecContract');
 
-  return { zoe, bundle, bundleCache, feeMintAccess };
+  return {
+    zoe,
+    bundle,
+    bundleCache,
+    storageNode: makeMockChainStorageRoot().makeChildNode('patientData'),
+    board: makeMockChainStorageRoot().makeChildNode('boardAux'),
+  };
 };
 
 test.before(async t => (t.context = await makeTestContext(t)));
 
-// IDEA: use test.serial and pass work products
-// between tests using t.context.
+// Test successful patient data publishing
+test('Successfully publish valid patient data', async t => {
+  const { bundle, zoe, storageNode, board } = t.context;
 
-test('Install the contract', async t => {
-  const { zoe, bundle } = t.context;
+  const terms = {
+    maxPatients: 1000n,
+  };
 
   const installation = await E(zoe).install(bundle);
-  t.log(installation);
-  t.is(typeof installation, 'object');
-});
+  const { publicFacet } = await E(zoe).startInstance(
+    installation,
+    undefined,
+    terms,
+    { storageNode, board },
+  );
 
-test('Start the contract', async t => {
-  const { zoe, bundle } = t.context;
-
-  const money = makeIssuerKit('PlayMoney');
-  const issuers = { Price: money.issuer };
-  const terms = { tradePrice: AmountMath.make(money.brand, 5n) };
-  t.log('terms:', terms);
-
-  /** @type {ERef<Installation<AssetContractFn>>} */
-  const installation = E(zoe).install(bundle);
-  const { instance } = await E(zoe).startInstance(installation, issuers, terms);
-  t.log(instance);
-  t.is(typeof instance, 'object');
-});
-
-/**
- * Alice trades by paying the price from the contract's terms.
- *
- * @param {import('ava').ExecutionContext} t
- * @param {ZoeService} zoe
- * @param {ERef<import('@agoric/zoe/src/zoeService/utils').Instance<AssetContractFn>} instance
- * @param {Purse} purse
- * @param {string[]} choices
- */
-const alice = async (t, zoe, instance, purse, choices = ['map', 'scroll']) => {
-  const publicFacet = E(zoe).getPublicFacet(instance);
-  // @ts-expect-error Promise<Instance> seems to work
-  const terms = await E(zoe).getTerms(instance);
-  const { issuers, brands, tradePrice } = terms;
-
-  const choiceBag = makeCopyBag(choices.map(name => [name, 1n]));
-  const proposal = {
-    give: { Price: tradePrice },
-    want: { Items: AmountMath.make(brands.Item, choiceBag) },
-  };
-  const pmt = await E(purse).withdraw(tradePrice);
-  t.log('Alice gives', proposal.give);
-  // #endregion makeProposal
-
-  const toTrade = E(publicFacet).makeTradeInvitation();
-
-  const seat = E(zoe).offer(toTrade, proposal, { Price: pmt });
-  const items = await E(seat).getPayout('Items');
-
-  const actual = await E(issuers.Item).getAmountOf(items);
-  t.log('Alice payout brand', actual.brand);
-  t.log('Alice payout value', actual.value);
-  t.deepEqual(actual, proposal.want.Items);
-};
-
-test('Alice trades: give some play money, want items', async t => {
-  const { zoe, bundle } = t.context;
-
-  const money = makeIssuerKit('PlayMoney');
-  const issuers = { Price: money.issuer };
-  const terms = { tradePrice: AmountMath.make(money.brand, 5n) };
-
-  /** @type {ERef<Installation<AssetContractFn>>} */
-  const installation = E(zoe).install(bundle);
-  const { instance } = await E(zoe).startInstance(installation, issuers, terms);
-  t.log(instance);
-  t.is(typeof instance, 'object');
-
-  const alicePurse = money.issuer.makeEmptyPurse();
-  const amountOfMoney = AmountMath.make(money.brand, 10n);
-  const moneyPayment = money.mint.mintPayment(amountOfMoney);
-  alicePurse.deposit(moneyPayment);
-  await alice(t, zoe, instance, alicePurse);
-});
-
-test('Trade in IST rather than play money', async t => {
-  /**
-   * Start the contract, providing it with
-   * the IST issuer.
-   *
-   * @param {{ zoe: ZoeService, bundle: {} }} powers
-   */
-  const startContract = async ({ zoe, bundle }) => {
-    /** @type {ERef<Installation<AssetContractFn>>} */
-    const installation = E(zoe).install(bundle);
-    const feeIssuer = await E(zoe).getFeeIssuer();
-    const feeBrand = await E(feeIssuer).getBrand();
-    const tradePrice = AmountMath.make(feeBrand, 25n * CENT);
-    return E(zoe).startInstance(
-      installation,
-      { Price: feeIssuer },
-      { tradePrice },
-    );
+  const validPatientData = {
+    patientId: 'P12345',
+    name: 'John Doe',
+    age: 30,
+    gender: 'M',
+    bloodType: 'O+',
   };
 
-  const { zoe, bundle, bundleCache, feeMintAccess } = t.context;
-  const { instance } = await startContract({ zoe, bundle });
-  const { faucet } = makeStableFaucet({ bundleCache, feeMintAccess, zoe });
-  await alice(t, zoe, instance, await faucet(5n * UNIT6));
+  const invitation = E(publicFacet).makePublishInvitation();
+
+  const userSeat = await E(zoe).offer(invitation, undefined, undefined, {
+    patientData: validPatientData,
+  });
+
+  const result = await E(userSeat).getOfferResult();
+  t.is(result, 'Patient data published successfully');
 });
 
-test('use the code that will go on chain to start the contract', async t => {
-  const noop = harden(() => {});
+// Test invalid patient data rejection
+test('Reject invalid patient data', async t => {
+  const { bundle, zoe, storageNode, board } = t.context;
 
-  // Starting the contract consumes an installation
-  // and produces an instance, brand, and issuer.
-  // We coordinate these with promises.
-  const makeProducer = () => ({ ...makePromiseKit(), reset: noop });
-  const sync = {
-    installation: makeProducer(),
-    instance: makeProducer(),
-    brand: makeProducer(),
-    issuer: makeProducer(),
+  const terms = {
+    maxPatients: 1000n,
   };
 
-  /**
-   * Chain bootstrap makes a number of powers available
-   * to code approved by BLD staker governance.
-   *
-   * Here we simulate the ones needed for starting this contract.
-   */
-  const mockBootstrap = async () => {
-    const board = { getId: noop };
-    const chainStorage = Far('chainStorage', {
-      makeChildNode: async () => chainStorage,
-      setValue: async () => {},
-    });
+  const installation = await E(zoe).install(bundle);
+  const { publicFacet } = await E(zoe).startInstance(
+    installation,
+    undefined,
+    terms,
+    { storageNode, board },
+  );
 
-    const { zoe } = t.context;
-    const startUpgradable = async ({
-      installation,
-      issuerKeywordRecord,
-      label,
-      terms,
-    }) =>
-      E(zoe).startInstance(installation, issuerKeywordRecord, terms, {}, label);
-    const feeIssuer = await E(zoe).getFeeIssuer();
-    const feeBrand = await E(feeIssuer).getBrand();
-
-    const pFor = x => Promise.resolve(x);
-    const powers = {
-      consume: { zoe, chainStorage, startUpgradable, board },
-      brand: {
-        consume: { IST: pFor(feeBrand) },
-        produce: { Item: sync.brand },
-      },
-      issuer: {
-        consume: { IST: pFor(feeIssuer) },
-        produce: { Item: sync.issuer },
-      },
-      installation: { consume: { patientData: sync.installation.promise } },
-      instance: { produce: { patientData: sync.instance } },
-    };
-    return powers;
+  const invalidPatientData = {
+    patientId: 'P12345',
+    name: 'John Doe',
+    // Missing required fields: age, gender, bloodType
   };
 
-  const powers = await mockBootstrap();
+  const invitation = E(publicFacet).makePublishInvitation();
+  const seat = await E(zoe).offer(invitation, undefined, undefined, {
+    patientData: invalidPatientData,
+  });
+  const resultP = await E(seat).getOfferResult();
+  t.is(resultP.message, 'Invalid patient data structure');
+});
 
-  // Code to install the contract is automatically
-  // generated by `agoric run`. No need to test that part.
-  const { zoe, bundle } = t.context;
-  const installation = E(zoe).install(bundle);
-  sync.installation.resolve(installation);
+// Test duplicate patient ID handling
+test('Handle duplicate patient ID', async t => {
+  const { bundle, zoe, storageNode, board } = t.context;
 
-  // When the BLD staker governance proposal passes,
-  // the startup function gets called.
-  await startpatientDataContract(powers);
-  const instance = await sync.instance.promise;
+  const terms = {
+    maxPatients: 1000n,
+  };
 
-  // Now that we have the instance, resume testing as above.
-  const { feeMintAccess, bundleCache } = t.context;
-  const { faucet } = makeStableFaucet({ bundleCache, feeMintAccess, zoe });
-  await alice(t, zoe, instance, await faucet(5n * UNIT6));
+  const installation = await E(zoe).install(bundle);
+  const { publicFacet } = await E(zoe).startInstance(
+    installation,
+    undefined,
+    terms,
+    { storageNode, board },
+  );
+
+  const patientData = {
+    patientId: 'P12345',
+    name: 'John Doe',
+    age: 30,
+    gender: 'M',
+    bloodType: 'O+',
+  };
+
+  // First submission
+  const invitation1 = E(publicFacet).makePublishInvitation();
+  await E(zoe).offer(invitation1, undefined, undefined, { patientData });
+
+  // Second submission with same ID
+  const invitation2 = E(publicFacet).makePublishInvitation();
+  const duplicateData = { ...patientData, name: 'Jane Doe' };
+
+  const userSeat = await E(zoe).offer(invitation2, undefined, undefined, {
+    patientData: duplicateData,
+  });
+
+  const result = await E(userSeat).getOfferResult();
+  t.is(result, 'Patient data published successfully');
+});
+
+// Test maxPatients limit
+test('Enforce maxPatients limit', async t => {
+  const { bundle, zoe, storageNode, board } = t.context;
+
+  const terms = {
+    maxPatients: 1n, // Set limit to 1 patient
+  };
+
+  const installation = await E(zoe).install(bundle);
+  const { publicFacet } = await E(zoe).startInstance(
+    installation,
+    undefined,
+    terms,
+    { storageNode, board },
+  );
+
+  const patient1Data = {
+    patientId: 'P12345',
+    name: 'John Doe',
+    age: 30,
+    gender: 'M',
+    bloodType: 'O+',
+  };
+
+  const patient2Data = {
+    patientId: 'P67890',
+    name: 'Jane Doe',
+    age: 25,
+    gender: 'F',
+    bloodType: 'A+',
+  };
+
+  // First patient should succeed
+  const invitation1 = E(publicFacet).makePublishInvitation();
+  await E(zoe).offer(invitation1, undefined, undefined, {
+    patientData: patient1Data,
+  });
+
+  // Second patient should fail due to maxPatients limit
+  const invitation2 = E(publicFacet).makePublishInvitation();
+
+  const seat = await E(zoe).offer(invitation2, undefined, undefined, {
+    patientData: patient2Data,
+  });
+  const result = await E(seat).getOfferResult();
+  t.is(result.message, 'Maximum number of patients reached');
 });

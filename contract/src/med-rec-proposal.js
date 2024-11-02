@@ -1,7 +1,6 @@
 // @ts-check
 import { E } from '@endo/far';
 import { makeMarshal } from '@endo/marshal';
-import { AmountMath } from '@agoric/ertp/src/amountMath.js';
 
 console.warn('start proposal module evaluating');
 
@@ -180,7 +179,10 @@ const patientDataManifest = {
 };
 harden(patientDataManifest);
 
-export const getManifestForpatientData = ({ restoreRef }, { patientDataRef }) => {
+export const getManifestForpatientData = (
+  { restoreRef },
+  { patientDataRef },
+) => {
   return harden({
     manifest: patientDataManifest,
     installations: {

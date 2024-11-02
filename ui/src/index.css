@@ -345,7 +345,8 @@ select:focus {
 
 .nav-buttons {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 5rem;
   background-color: #ffffff;
   padding: 1rem;
   border-radius: 8px;
@@ -361,12 +362,14 @@ select:focus {
   font-size: 1rem;
   font-weight: 500;
   color: #333;
-  border-radius: 6px;
-  transition: background-color 0.3s, color 0.3s;
+  border-radius: 10px;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 
 .nav-tab .icon {
-  margin-right: 0.5rem;
+  margin-right: 0.05rem;
   color: #1890ff;
 }
 
