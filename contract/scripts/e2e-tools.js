@@ -532,8 +532,8 @@ export const makeE2ETools = (
       console.log(containerPath);
 
       // load bundle
-      const bundle = await bundleCache.load(fullPath, 'med-rec');
-      const bundle_proposal = await bundleCache.load(proposalPath, 'med-rec');
+      const bundle = await bundleCache.load(fullPath, 'ed-cert');
+      const bundle_proposal = await bundleCache.load(proposalPath, 'ed-cert');
 
       console.log('bundle');
       console.log(bundle);
@@ -572,7 +572,7 @@ export const makeE2ETools = (
       // generate plan, etc
       // const keyring = await makeKeyring(tools);
       // const deployBuilder = makeDeployBuilder(tools, fse.readJSON, execa);
-      const contractBuilder = './src/builder/init-med-rec.js';
+      const contractBuilder = './src/builder/init-ed-cert.js';
       // await deployBuilder(contractBuilder);
       const { stdout } = await execa`agoric run ${contractBuilder}`;
       const match = stdout.match(/ (?<name>[-\w]+)-permit.json/);
@@ -654,7 +654,7 @@ export const makeE2ETools = (
   };
 
   /**
-   * NOTE: name only comes through as med-rec, not the actual file names
+   * NOTE: name only comes through as ed-cert, not the actual file names
    *
    * @param {{
    *   name: string;

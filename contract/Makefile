@@ -46,5 +46,5 @@ fund: fund-provision-pool
 	make fund-osmo
 
 deploy: fund
-	$(DEPLOY_SCRIPT) scripts/init-med-rec.js
+	$(DEPLOY_SCRIPT) scripts/init-ed-cert.js
 

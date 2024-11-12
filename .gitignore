@@ -14,7 +14,7 @@ dist-ssr
 .env
 install-state.gz
 ,tx.json
-start-med-rec-plan.json
+start-ed-cert-plan.json
 
 # Editor directories and files
 .vscode/*
@@ -30,6 +30,6 @@ start-med-rec-plan.json
 # Synpress directories and files
 screenshots
 videos
-startMedRecContract-permit.json
-startMedRecContract-plan.json
-startMedRecContract.js
+startEdCertContract-permit.json
+startEdCertContract-plan.json
+startEdCertContract.js

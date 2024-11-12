@@ -1,10 +1,10 @@
 /**
- * @file build core eval script to deploy med-rec contract
+ * @file build core eval script to deploy ed-cert contract
  *
  * Usage:
- *   agoric run init-med-rec.js
+ *   agoric run init-ed-cert.js
  * or
- *   agoric run init-med-rec.js --net emerynet \
+ *   agoric run init-ed-cert.js --net emerynet \
  *     --peer osmosis:connection-128:channel-115:uosmo
  *
  * where connection-128 is a connection to a chain that we'll call osmosis,
@@ -19,9 +19,9 @@ import { M, mustMatch } from '@endo/patterns';
 import { execFileSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import {
-  getManifestForMedRec,
-  startMedRecContract,
-} from '../src/med-rec-proposal.js';
+  getManifestForEdCert,
+  startEdCertContract,
+} from '../src/ed-cert-proposal.js';
 import { makeAgd } from '../tools/agd-lib.js';
 
 /**
@@ -35,7 +35,7 @@ const options = {
   net: { type: 'string' },
   peer: { type: 'string', multiple: true },
 };
-/** @typedef {{ net?: string, peer?: string[] }} MedRecOpts */
+/** @typedef {{ net?: string, peer?: string[] }} EdCertOpts */
 
 /** @type {CoreEvalBuilder} */
 export const defaultProposalBuilder = async (
@@ -43,12 +43,12 @@ export const defaultProposalBuilder = async (
   { chainDetails },
 ) => {
   return harden({
-    sourceSpec: '../src/med-rec-proposal.js',
+    sourceSpec: '../src/ed-cert-proposal.js',
     getManifestCall: [
-      getManifestForMedRec.name,
+      getManifestForEdCert.name,
       {
         installKeys: {
-          MedRec: publishRef(install('../src/med-rec-contract.js')),
+          EdCert: publishRef(install('../src/ed-cert-contract.js')),
         },
         chainDetails,
       },
@@ -59,7 +59,7 @@ export const defaultProposalBuilder = async (
 export default async (homeP, endowments) => {
   const { writeCoreEval } = await makeHelpers(homeP, endowments);
   const { scriptArgs } = endowments;
-  /** @type {{ values: MedRecOpts }} */
+  /** @type {{ values: EdCertOpts }} */
   const { values: flags } = parseArgs({ args: scriptArgs, options });
 
   /** @param {string} net */
@@ -142,7 +142,7 @@ export default async (homeP, endowments) => {
     };
   }
   mustMatch(harden(chainDetails), M.recordOf(M.string(), CosmosChainInfoShape));
-  await writeCoreEval(startMedRecContract.name, opts =>
+  await writeCoreEval(startEdCertContract.name, opts =>
     defaultProposalBuilder(opts, { chainDetails }),
   );
 };

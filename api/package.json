@@ -1,5 +1,5 @@
 {
   "$note": "@agoric/create-dapp@0.1.0 expects an api/package.json",
-  "name": "med-rec-api",
+  "name": "ed-cert-api",
   "version": "0.1.0"
 }

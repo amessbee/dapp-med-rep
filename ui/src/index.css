@@ -19,6 +19,7 @@ a {
   color: #ff6464;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #f25353;
 }
@@ -45,9 +46,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   background: #171717;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -58,13 +61,17 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
-    background-color: #04aa6d; /* Green */
+    background-color: #04aa6d;
+    /* Green */
     color: #fff;
   }
+
   button:hover {
     background: #039962;
   }
@@ -79,23 +86,22 @@ button:focus-visible {
 .app-container {
   min-height: 100vh;
   background-color: #f0f2f5;
-  padding: 1rem 0.5rem;
+  padding: 2rem 1rem;
 }
 
 .form-container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  
   overflow: hidden;
 }
 
 /* Header Styles */
 .header {
   background: linear-gradient(to right, #c84e4e, #fb8f8f);
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .header-content {
@@ -103,11 +109,11 @@ button:focus-visible {
   justify-content: space-between;
   align-items: center;
   margin: 0 auto;
-  padding: 0 rem 0;
+  padding: 0 1rem;
 }
 
 .highlighted {
-  background-color: #fff0f0;
+  background-color: #f0f8ff;
   font-weight: bold;
 }
 
@@ -117,7 +123,7 @@ button:focus-visible {
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: bold;
   color: #ffffff;
   margin-left: 0.75rem;
@@ -129,33 +135,11 @@ button:focus-visible {
   height: 32px;
 }
 
-/* Wallet section styles */
-.wallet-section {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.wallet-info {
-  min-width: 150px;
-}
-
-.wallet-address {
-  font-family: monospace;
-  background-color: #f0f0f0;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
-}
-
-.wallet-address-placeholder {
-  height: 2rem;
-}
 .wallet-button {
   display: flex;
   align-items: center;
   background-color: #ffffff;
-  color: #c84e4e;
+  color: #4e54c8;
   padding: 0.5rem 1rem;
   border-radius: 25px;
   font-weight: 500;
@@ -172,16 +156,16 @@ button:focus-visible {
   margin-right: 0.5rem;
   width: 24px;
   height: 24px;
-  color: #c84e4e;
+  color: #4e54c8;
 }
 
 /* Form Styles */
 .form {
-  padding: 1rem;
+  padding: 2rem;
 }
 
 .section {
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 .section-header {
@@ -191,7 +175,7 @@ button:focus-visible {
 }
 
 .section-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #333333;
   margin-left: 0.5rem;
@@ -200,8 +184,7 @@ button:focus-visible {
 .field-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  width: 100%;
+  gap: 1.5rem;
 }
 
 @media (min-width: 768px) {
@@ -225,7 +208,7 @@ button:focus-visible {
 .input,
 .textarea,
 select {
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #cccccc;
   border-radius: 8px;
   font-size: 1rem;
@@ -236,7 +219,7 @@ select {
 .input:focus,
 .textarea:focus,
 select:focus {
-  border-color: #c84e4e;
+  border-color: #4e54c8;
   outline: none;
 }
 
@@ -404,7 +387,8 @@ select:focus {
   border-radius: 10px 10px 0 0;
   transition: all 0.3s ease;
   position: relative;
-  margin-bottom: -1px; /* Overlap the border bottom when active */
+  margin-bottom: -1px;
+  /* Overlap the border bottom when active */
   border: 1px solid transparent;
 }
 
@@ -434,16 +418,19 @@ select:focus {
 
 /* Remove or modify these conflicting styles */
 .nav-tab::after {
-  display: none; /* Remove the tooltip for cleaner tab appearance */
+  display: none;
+  /* Remove the tooltip for cleaner tab appearance */
 }
 
 .nav-tab:hover {
-  transform: none; /* Remove the hover transform */
+  transform: none;
+  /* Remove the hover transform */
   box-shadow: none;
 }
 
 .nav-tab.active {
-  transform: none; /* Remove the active transform */
+  transform: none;
+  /* Remove the active transform */
 }
 
 .content-container {
@@ -527,7 +514,7 @@ select:focus {
 
 .patient-photo img {
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .patient-details .field {
@@ -592,5 +579,275 @@ select:focus {
   width: 100%;
   max-width: 200px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.certificate-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.share-button {
+  font-size: 0.9em;
+  color: #4a90e2;
+  text-decoration: none;
+  padding: 5px 10px;
+  border: 1px solid #4a90e2;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.share-button:hover {
+  background: #4a90e2;
+  color: white;
+}
+
+.public-certificate {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: #fafafa;
+  font-family: 'Inter', sans-serif;
+}
+
+.certificate-container {
+  background: #fff;
+  padding: 3rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  max-width: 900px;
+  width: 100%;
+  position: relative;
+  border: none;
+  outline: none;
+}
+
+.certificate-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.certificate-header::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, #c84e4e, #ff6464);
+  border-radius: 2px;
+}
+
+.institute-logo {
+  max-width: 120px;
+  margin-bottom: 1rem;
+}
+
+.certificate-content {
+  text-align: center;
+  position: relative;
+  background: url('path-to-watermark.png') center center no-repeat;
+  /* Add a subtle watermark */
+  background-size: 60%;
+}
+
+.student-name {
+  font-size: 2.8rem;
+  color: #2d3436;
+  margin: 1.5rem 0;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.5px;
+}
+
+.course-name {
+  font-size: 1.5rem;
+  color: #636e72;
+  margin: 1rem 0;
+  font-weight: 600;
+}
+
+.certificate-text {
+  font-size: 1.1rem;
+  color: #636e72;
+  margin: 0.8rem 0;
+  line-height: 1.6;
+}
+
+.grade-section {
+  margin: 0.75rem 0;
+  padding: 0.05rem 2.5rem;
+  border: none;
+  background: linear-gradient(135deg, #ff6464, #c84e4e);
+  color: white;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.achievements-section {
+  margin: 1rem 0;
+  padding: 0.05rem;
+  background: #f8f9fa;
+  border: none;
+  border-radius: 12px;
+}
+
+.signature-section {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  padding: 0;
+}
+
+.signature {
+  max-width: 150px;
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid #2d3436;
+  padding-bottom: 0.5rem;
+}
+
+.authority-name {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: #2d3436;
+}
+
+.authority-title {
+  color: #636e72;
+  font-style: normal;
+  font-size: 0.9rem;
+}
+
+.certificate-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  font-size: 0.9rem;
+  color: #636e72;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media print {
+  .public-certificate {
+    padding: 0;
+    background: white;
+  }
+
+  .certificate-container {
+    box-shadow: none;
+    border: 15px solid #f8f8f8;
+  }
+}
+
+.certificate-container::before,
+.certificate-container::after {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-image: 
+    linear-gradient(45deg, transparent 48%, #gold 49%, #gold 51%, transparent 52%),
+    linear-gradient(-45deg, transparent 48%, #gold 49%, #gold 51%, transparent 52%);
+  background-size: 20px 20px;
+  background-repeat: repeat;
+  opacity: 0.3;
+}
+
+.certificate-container::before {
+  top: 0;
+  left: 0;
+  transform: rotate(0deg);
+}
+
+.certificate-container::after {
+  bottom: 0;
+  right: 0;
+  transform: rotate(180deg);
+}
+
+.header-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.certificate-content {
+  text-align: center;
+  border: 1px solid #f0f0f0;
+  margin: 20px;
+  padding: 20px;
+  background: 
+    linear-gradient(white, white) padding-box,
+    linear-gradient(45deg, #gold, #e5c100) border-box;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  position: relative;
+}
+
+.student-name::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #gold, transparent);
+}
+
+.achievements-section::before,
+.achievements-section::after {
+  content: '✦';
+  color: #gold;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.5rem;
+}
+
+.achievements-section::before {
+  top: -15px;
+}
+
+.achievements-section::after {
+  bottom: -15px;
+}
+
+.wallet-section {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  right: 2rem;
+  gap: 1rem;
+}
+
+.wallet-info {
+  min-width: 150px;
+  text-align: right;
+}
+
+.wallet-address {
+  font-family: monospace;
+  background-color: rgba(240, 240, 240, 0.9);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wallet-address-placeholder {
+  height: 2rem;
+}
+

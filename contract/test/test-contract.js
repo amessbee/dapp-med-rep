@@ -12,14 +12,14 @@ import { makeZoeKitForTest } from '@agoric/zoe/tools/setup-zoe.js';
 import { makeMockChainStorageRoot } from '@agoric/internal/src/storage-test-utils.js';
 
 const myRequire = createRequire(import.meta.url);
-const contractPath = myRequire.resolve(`../src/med-rec-contract.js`);
+const contractPath = myRequire.resolve(`../src/ed-cert-contract.js`);
 
 const test = anyTest;
 
 const makeTestContext = async _t => {
   const { zoeService: zoe } = makeZoeKitForTest();
   const bundleCache = await makeNodeBundleCache('bundles/', {}, s => import(s));
-  const bundle = await bundleCache.load(contractPath, 'medRecContract');
+  const bundle = await bundleCache.load(contractPath, 'edCertContract');
 
   return {
     zoe,

@@ -1,5 +1,5 @@
 {
-  "name": "dapp-med-rec",
+  "name": "dapp-ed-cert",
   "version": "0.1.0",
   "type": "module",
   "license": "Apache-2.0",
@@ -46,7 +46,7 @@
     "docker:make": "cd contract; docker compose exec agd make -C /workspace/contract",
     "make:help": "make -C contract list",
     "start:contract": "cd contract && yarn start",
-    "integration-test": "cd contract && yarn ava ./test/med-rec-multichain.test.js",
+    "integration-test": "cd contract && yarn ava ./test/ed-cert-multichain.test.js",
     "start:ui": "cd ui && yarn dev",
     "format": "yarn prettier --write .github contract ui",
     "lint:format": "yarn prettier --check .github contract ui",

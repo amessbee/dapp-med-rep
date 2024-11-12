@@ -16,8 +16,21 @@ import {
   ClipboardList,
   User,
   LogOut,
+  Building,
+  GraduationCap,
+  Award,
+  School,
+  FileText,
+  BookOpen,
+  Scroll,
+  UserCheck,
 } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { PublicCertificateView } from './components/publicCertificateView';
+import defaultSignature from '/signs_small.jpg';
+import defaultLogo from '/agoric_small.jpg';
+
 
 const ENDPOINTS = {
   RPC: 'http://localhost:26657',
@@ -40,7 +53,7 @@ const setup = async () => {
     instances => {
       useAppStore.setState({
         patientContractInstance: instances
-          .find(([name]) => name === 'MedRec')!
+          .find(([name]) => name === 'EdCert')!
           .at(1),
       });
     },
@@ -66,7 +79,7 @@ const disconnectWallet = () => {
   useAppStore.setState({ wallet: undefined });
 };
 
-const publishMedRec = (medRec: any) => {
+const publishEdCert = (certificate: any) => {
   const { wallet, patientContractInstance } = useAppStore.getState();
   if (!patientContractInstance) {
     toast.error('No instance of Smart Contract found on chain!', {
@@ -76,7 +89,7 @@ const publishMedRec = (medRec: any) => {
     return;
   }
 
-  
+  console.log(certificate);
   wallet?.makeOffer(
     {
       source: 'contract',
@@ -94,7 +107,7 @@ const publishMedRec = (medRec: any) => {
     },
     {}, // No assets being exchanged
     {
-      medRec: medRec,
+      edCert: certificate,
     },
     (update: { status: string; data?: unknown }) => {
       if (update.status === 'error') {
@@ -119,7 +132,7 @@ const publishMedRec = (medRec: any) => {
   );
 };
 
-const updateMedRec = (patientId: string, medRec: any) => {
+const updateCertificate = (certificateId: string, certificate: any) => {
   const { wallet, patientContractInstance } = useAppStore.getState();
   if (!patientContractInstance) {
     toast.error('No instance of Smart Contract found on chain!', {
@@ -141,7 +154,7 @@ const updateMedRec = (patientId: string, medRec: any) => {
     },
     {}, // No assets being exchanged
     {
-      medRec: medRec,
+      certificate: certificate,
     },
     (update: { status: string; data?: unknown }) => {
       if (update.status === 'error') {
@@ -166,19 +179,23 @@ const updateMedRec = (patientId: string, medRec: any) => {
   );
 };
 
-const MedRecForm = () => {
+const EdCertForm = () => {
   const [formData, setFormData] = useState({
-    patientId: 'PAT-2024-001',
-    name: 'Alice Doe',
-    age: '30',
-    gender: 'Female',
-    bloodType: 'O+',
-    allergies: 'None reported',
-    medications: 'No current medications',
-    lastVisit: '2024-03-15',
-    primaryDoctor: 'Dr. Sarah Smith',
-    emergencyContact: '+1 (555) 123-4567',
-    photo: '',
+    certificateId: 'CERT-2024-002',
+    studentName: 'John Doe',
+    courseName: 'Orchestration Hackathon',
+    startDate: '2024-09-01',
+    endDate: '2024-10-30',
+    instituteName: 'Agoric',
+    instituteAddress: '123 University Ave, Agoric University, TC 12345',
+    certifyingAuthority: 'Jovonni Smith Martinez',
+    authorityDesignation: 'Dev Relations Engineer',
+    authoritySignature: defaultSignature,
+    instituteLogo: defaultLogo,
+    grade: 'A',
+    achievements: 'Runner Up in Orchestration Hackathon 2024',
+    specialization: 'Staking and Governance',
+    certificateType: 'workshop',
   });
 
   useEffect(() => {
@@ -190,9 +207,7 @@ const MedRecForm = () => {
   }));
 
   const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -203,77 +218,112 @@ const MedRecForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    publishMedRec(formData);
+    publishEdCert(formData);
   };
 
   return (
     <div className="form-container">
-      {/* Form */}
       <form onSubmit={handleSubmit} className="form">
         <div className="sections-container">
-          {/* Personal Information */}
+          {/* Basic Information */}
           <div className="section">
             <div className="section-header">
               <h2 className="section-title">
-                Personal Information <UserCircle className="icon" />{' '}
+                Basic Information <FileText className="icon" />
               </h2>
             </div>
             <div className="field-grid">
-              {/* Patient ID */}
               <div className="field">
-                <label className="label">Patient ID </label>
+                <label className="label">Certificate ID</label>
                 <input
                   type="text"
-                  name="patientId"
-                  value={formData.patientId}
+                  name="certificateId"
+                  value={formData.certificateId}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
-              {/* Full Name */}
               <div className="field">
-                <label className="label">Full Name </label>
+                <label className="label">Student Name</label>
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
+                  name="studentName"
+                  value={formData.studentName}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
-              {/* Primary Doctor */}
               <div className="field">
-                <label className="label">Primary Doctor </label>
+                <label className="label">Certificate Type</label>
+                <select
+                  name="certificateType"
+                  value={formData.certificateType}
+                  onChange={handleInputChange}
+                  className="input"
+                  required
+                >
+                  <option value="workshop">Workshop</option>
+                  <option value="degree">Degree</option>
+                  <option value="diploma">Diploma</option>
+                  <option value="short-course">Short Course</option>
+                  <option value="completion">Completion</option>
+                  <option value="attendance">Attendance</option>
+                  <option value="participation">Participation</option>
+                </select>
+              </div>
+              <div className="field">
+                <label className="label">Course/Degree Name</label>
                 <input
                   type="text"
-                  name="primaryDoctor"
-                  value={formData.primaryDoctor}
+                  name="courseName"
+                  value={formData.courseName}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
-              {/* Emergency Contact */}
+            </div>
+          </div>
+
+          {/* Authority Information */}
+          <div className="section">
+            <div className="section-header">
+              <h2 className="section-title">
+                Authority Information <UserCheck className="icon" />
+              </h2>
+            </div>
+            <div className="field-grid">
               <div className="field">
-                <label className="label">Emergency Contact </label>
+                <label className="label">Certifying Authority</label>
                 <input
                   type="text"
-                  name="emergencyContact"
-                  value={formData.emergencyContact}
+                  name="certifyingAuthority"
+                  value={formData.certifyingAuthority}
+                  onChange={handleInputChange}
+                  className="input"
+                  required
+                />
+              </div>
+              <div className="field">
+                <label className="label">Authority Designation</label>
+                <input
+                  type="text"
+                  name="authorityDesignation"
+                  value={formData.authorityDesignation}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
               <div className="field photo-field">
-                <label className="label">Patient Photo</label>
+                <label className="label">Authority Signature</label>
                 <div className="photo-upload-container">
-                  {formData.photo && (
+                  {formData.authoritySignature && (
                     <img 
-                      src={formData.photo} 
-                      alt="Patient" 
+                      src={formData.authoritySignature} 
+                      alt="Authority Signature" 
                       className="photo-preview"
                       style={{ maxWidth: '150px', marginBottom: '10px' }} 
                     />
@@ -288,7 +338,7 @@ const MedRecForm = () => {
                         reader.onloadend = () => {
                           setFormData(prev => ({
                             ...prev,
-                            photo: reader.result as string
+                            authoritySignature: reader.result as string
                           }));
                         };
                         reader.readAsDataURL(file);
@@ -301,159 +351,199 @@ const MedRecForm = () => {
             </div>
           </div>
 
-          {/* Medical Information */}
+          {/* Institute Information */}
           <div className="section">
             <div className="section-header">
               <h2 className="section-title">
-                {' '}
-                Medical Information <Heart className="icon" />{' '}
+                Institute Information <School className="icon" />
               </h2>
             </div>
             <div className="field-grid">
-              {/* Age */}
               <div className="field">
-                <label className="label">Age </label>
+                <label className="label">Institute Name</label>
                 <input
-                  type="number"
-                  name="age"
-                  value={formData.age}
+                  type="text"
+                  name="instituteName"
+                  value={formData.instituteName}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
-              {/* Blood Type */}
-              <div className="field">
-                <label className="label">Blood Type </label>
-                <select
-                  name="bloodType"
-                  value={formData.bloodType}
+              <div className="field photo-field">
+                <label className="label">Institute Logo</label>
+                <div className="photo-upload-container">
+                  {formData.instituteLogo && (
+                    <img 
+                      src={formData.instituteLogo} 
+                      alt="Institute Logo" 
+                      className="photo-preview"
+                      style={{ maxWidth: '150px', marginBottom: '10px' }} 
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setFormData(prev => ({
+                            ...prev,
+                            instituteLogo: reader.result as string
+                          }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="input"
+                  />
+                </div>
+                <div className="field">
+                <label className="label">Institute Address</label>
+                <input
+                  type="text"
+                  name="instituteAddress"
+                  value={formData.instituteAddress}
                   onChange={handleInputChange}
                   className="input"
                   required
-                >
-                  <option value="">Select Blood Type</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                </select>
+                />
               </div>
-              {/* Gender */}
-              <div className="field">
-                <label className="label">Gender </label>
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                  className="input"
-                  required
-                >
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="other">Other</option>
-                </select>
               </div>
-              {/* Last Visit Date */}
+            </div>
+          </div>
+
+          {/* Academic Information */}
+          <div className="section">
+            <div className="section-header">
+              <h2 className="section-title">
+                Academic Information <BookOpen className="icon" />
+              </h2>
+            </div>
+            <div className="field-grid">
               <div className="field">
-                <label className="label">Last Visit Date </label>
+                <label className="label">Start Date</label>
                 <input
                   type="date"
-                  name="lastVisit"
-                  value={formData.lastVisit}
+                  name="startDate"
+                  value={formData.startDate}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
-              {/* Allergies */}
               <div className="field">
-                <label className="label">Allergies </label>
-                <textarea
-                  name="allergies"
-                  value={formData.allergies}
+                <label className="label">End Date</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
                   onChange={handleInputChange}
-                  className="textarea"
-                  rows={4}
+                  className="input"
+                  required
                 />
               </div>
-              {/* Current Medications */}
+              
               <div className="field">
-                <label className="label">Current Medications </label>
+                <label className="label">Achievements</label>
                 <textarea
-                  name="medications"
-                  value={formData.medications}
+                  name="achievements"
+                  value={formData.achievements}
                   onChange={handleInputChange}
                   className="textarea"
                   rows={4}
+                  required
+                />
+              </div>
+              <div className="field">
+                <label className="label">Specialization</label>
+                <textarea
+                  name="specialization"
+                  value={formData.specialization}
+                  onChange={handleInputChange}
+                  className="textarea"
+                  rows={4}
+                  required
+                />
+              </div>
+              <div className="field">
+                <label className="label">Grade/GPA/Percentage/Score</label>
+                <input
+                  type="text"
+                  name="grade"
+                  value={formData.grade}
+                  onChange={handleInputChange}
+                  className="input"
+                  required
                 />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
           className={`submit-button ${!wallet ? 'disabled' : ''}`}
           disabled={!wallet}
         >
-          <Activity className="icon" />
-          <span>Publish Patient Data</span>
+          <Award className="icon" />
+          <span>Publish Certificate</span>
         </button>
       </form>
     </div>
   );
 };
 
-const UpdatePatientForm = () => {
-  const [patients, setPatients] = useState<string[]>([]);
+const UpdateCertificateForm = () => {
+  const [certificates, setCertificates] = useState<string[]>([]);
   const [formData, setFormData] = useState({
-    patientId: '',
-    name: '',
-    age: '',
-    gender: '',
-    bloodType: '',
-    allergies: '',
-    medications: '',
-    lastVisit: '',
-    primaryDoctor: '',
-    emergencyContact: '',
-    photo: '',
+    certificateId: '',
+    studentName: '',
+    courseName: '',
+    startDate: '',
+    endDate: '',
+    instituteName: '',
+    instituteAddress: '',
+    certifyingAuthority: '',
+    authorityDesignation: '',
+    authoritySignature: '',
+    instituteLogo: '',
+    grade: '',
+    achievements: '',
+    specialization: '',
+    certificateType: 'degree',
   });
 
   const { wallet } = useAppStore(({ wallet }) => ({
     wallet,
   }));
 
-  // Fetch patient list
+  // Fetch certificate list
   useEffect(() => {
-    const fetchPatientList = async () => {
+    const fetchCertificateList = async () => {
       const response = await fetch(
-        `${ENDPOINTS.API}/agoric/vstorage/children/published.MedRec.patients`,
+        `${ENDPOINTS.API}/agoric/vstorage/children/published.EdCert.certificates`,
       );
       const data = await response.json();
-      setPatients(data.children);
+      setCertificates(data.children);
     };
-    fetchPatientList();
+    fetchCertificateList();
   }, []);
 
-  // Fetch patient data when selected
-  const handlePatientSelect = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const patientId = e.target.value;
-    if (!patientId) return;
+  // Fetch certificate data when selected
+  const handleCertificateSelect = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const certificateId = e.target.value;
+    if (!certificateId) return;
 
     const response = await fetch(
-      `${ENDPOINTS.API}/agoric/vstorage/data/published.MedRec.patients.${patientId}`,
+      `${ENDPOINTS.API}/agoric/vstorage/data/published.EdCert.certificates.${certificateId}`,
     );
     const data = await response.json();
     const parsedData = JSON.parse(data.value).values[0];
-    const medRec = JSON.parse(parsedData);
-    setFormData(medRec);
+    const certificate = JSON.parse(parsedData);
+    setFormData(certificate);
   };
 
   const handleInputChange = (
@@ -468,24 +558,24 @@ const UpdatePatientForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateMedRec(formData.patientId, formData);
+    updateCertificate(formData.certificateId, formData);
   };
 
   return (
     <div className="form-container">
       <form onSubmit={handleSubmit} className="form">
-        <div className="patient-selector">
-          <label className="label">Select Patient to Update</label>
+        <div className="certificate-selector">
+          <label className="label">Select Certificate to Update</label>
           <select
             className="input"
-            value={formData.patientId}
-            onChange={handlePatientSelect}
+            value={formData.certificateId}
+            onChange={handleCertificateSelect}
             required
           >
-            <option value="">Select a patient</option>
-            {patients.map(patientId => (
-              <option key={patientId} value={patientId}>
-                {patientId}
+            <option value="">Select a certificate</option>
+            {certificates.map(certificateId => (
+              <option key={certificateId} value={certificateId}>
+                {certificateId}
               </option>
             ))}
           </select>
@@ -496,64 +586,125 @@ const UpdatePatientForm = () => {
           <div className="section">
             <div className="section-header">
               <h2 className="section-title">
-                Personal Information <UserCircle className="icon" />
+                Personal Information <UserCheck className="icon" />
               </h2>
             </div>
             <div className="field-grid">
-              {/* Patient ID - readonly since it's selected above */}
+              {/* Certificate ID - readonly since it's selected above */}
               <div className="field">
-                <label className="label">Patient ID</label>
+                <label className="label">Certificate ID</label>
                 <input
                   type="text"
-                  name="patientId"
-                  value={formData.patientId}
+                  name="certificateId"
+                  value={formData.certificateId}
                   className="input"
                   disabled
                 />
               </div>
-              {/* Full Name */}
+              {/* Student Name */}
               <div className="field">
-                <label className="label">Full Name</label>
+                <label className="label">Student Name</label>
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
+                  name="studentName"
+                  value={formData.studentName}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
-              {/* Primary Doctor */}
+              {/* Course/Degree Name */}
               <div className="field">
-                <label className="label">Primary Doctor</label>
+                <label className="label">Course/Degree Name</label>
                 <input
                   type="text"
-                  name="primaryDoctor"
-                  value={formData.primaryDoctor}
+                  name="courseName"
+                  value={formData.courseName}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
-              {/* Emergency Contact */}
+              {/* Start Date */}
               <div className="field">
-                <label className="label">Emergency Contact</label>
+                <label className="label">Start Date</label>
                 <input
-                  type="text"
-                  name="emergencyContact"
-                  value={formData.emergencyContact}
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
+              {/* End Date */}
+              <div className="field">
+                <label className="label">End Date</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleInputChange}
+                  className="input"
+                  required
+                />
+              </div>
+              {/* Institute Name */}
+              <div className="field">
+                <label className="label">Institute Name</label>
+                <input
+                  type="text"
+                  name="instituteName"
+                  value={formData.instituteName}
+                  onChange={handleInputChange}
+                  className="input"
+                  required
+                />
+              </div>
+              {/* Institute Address */}
+              <div className="field">
+                <label className="label">Institute Address</label>
+                <input
+                  type="text"
+                  name="instituteAddress"
+                  value={formData.instituteAddress}
+                  onChange={handleInputChange}
+                  className="input"
+                  required
+                />
+              </div>
+              {/* Certifying Authority */}
+              <div className="field">
+                <label className="label">Certifying Authority</label>
+                <input
+                  type="text"
+                  name="certifyingAuthority"
+                  value={formData.certifyingAuthority}
+                  onChange={handleInputChange}
+                  className="input"
+                  required
+                />
+              </div>
+              {/* Authority Designation */}
+              <div className="field">
+                <label className="label">Authority Designation</label>
+                <input
+                  type="text"
+                  name="authorityDesignation"
+                  value={formData.authorityDesignation}
+                  onChange={handleInputChange}
+                  className="input"
+                  required
+                />
+              </div>
+              {/* Authority Signature */}
               <div className="field photo-field">
-                <label className="label">Patient Photo</label>
+                <label className="label">Authority Signature</label>
                 <div className="photo-upload-container">
-                  {formData.photo && (
+                  {formData.authoritySignature && (
                     <img 
-                      src={formData.photo} 
-                      alt="Patient" 
+                      src={formData.authoritySignature} 
+                      alt="Authority Signature" 
                       className="photo-preview"
                       style={{ maxWidth: '150px', marginBottom: '10px' }} 
                     />
@@ -568,7 +719,7 @@ const UpdatePatientForm = () => {
                         reader.onloadend = () => {
                           setFormData(prev => ({
                             ...prev,
-                            photo: reader.result as string
+                            authoritySignature: reader.result as string
                           }));
                         };
                         reader.readAsDataURL(file);
@@ -578,94 +729,67 @@ const UpdatePatientForm = () => {
                   />
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Medical Information */}
-          <div className="section">
-            <div className="section-header">
-              <h2 className="section-title">
-                Medical Information <Heart className="icon" />
-              </h2>
-            </div>
-            <div className="field-grid">
-              {/* Age */}
+              {/* Institute Logo */}
+              <div className="field photo-field">
+                <label className="label">Institute Logo</label>
+                <div className="photo-upload-container">
+                  {formData.instituteLogo && (
+                    <img 
+                      src={formData.instituteLogo} 
+                      alt="Institute Logo" 
+                      className="photo-preview"
+                      style={{ maxWidth: '150px', marginBottom: '10px' }} 
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setFormData(prev => ({
+                            ...prev,
+                            instituteLogo: reader.result as string
+                          }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="input"
+                  />
+                </div>
+              </div>
+              {/* Grade */}
               <div className="field">
-                <label className="label">Age</label>
+                <label className="label">Grade</label>
                 <input
-                  type="number"
-                  name="age"
-                  value={formData.age}
+                  type="text"
+                  name="grade"
+                  value={formData.grade}
                   onChange={handleInputChange}
                   className="input"
                   required
                 />
               </div>
-              {/* Blood Type */}
+              {/* Achievements */}
               <div className="field">
-                <label className="label">Blood Type</label>
-                <select
-                  name="bloodType"
-                  value={formData.bloodType}
-                  onChange={handleInputChange}
-                  className="input"
-                  required
-                >
-                  <option value="">Select Blood Type</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                </select>
-              </div>
-              {/* Gender */}
-              <div className="field">
-                <label className="label">Gender</label>
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                  className="input"
-                  required
-                >
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              {/* Last Visit Date */}
-              <div className="field">
-                <label className="label">Last Visit Date</label>
-                <input
-                  type="date"
-                  name="lastVisit"
-                  value={formData.lastVisit}
-                  onChange={handleInputChange}
-                  className="input"
-                  required
-                />
-              </div>
-              {/* Allergies */}
-              <div className="field">
-                <label className="label">Allergies</label>
+                <label className="label">Achievements</label>
                 <textarea
-                  name="allergies"
-                  value={formData.allergies}
+                  name="achievements"
+                  value={formData.achievements}
                   onChange={handleInputChange}
                   className="textarea"
                   rows={4}
                 />
               </div>
-              {/* Current Medications */}
+              {/* Specialization */}
               <div className="field">
-                <label className="label">Current Medications</label>
+                <label className="label">Specialization</label>
                 <textarea
-                  name="medications"
-                  value={formData.medications}
+                  name="specialization"
+                  value={formData.specialization}
                   onChange={handleInputChange}
                   className="textarea"
                   rows={4}
@@ -677,160 +801,173 @@ const UpdatePatientForm = () => {
 
         <button
           type="submit"
-          className={`submit-button ${!wallet || !formData.patientId ? 'disabled' : ''}`}
-          disabled={!wallet || !formData.patientId}
+          className={`submit-button ${!wallet || !formData.certificateId ? 'disabled' : ''}`}
+          disabled={!wallet || !formData.certificateId}
         >
-          <Activity className="icon" />
-          <span>Update Patient Data</span>
+          <Award className="icon" />
+          <span>Update Certificate</span>
         </button>
       </form>
     </div>
   );
 };
 
-const PatientTab = () => {
-  const [patients, setPatients] = useState<string[]>([]);
-  const [selectedMedRec, setSelectedMedRec] = useState<any | null>(
-    null,
-  );
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
-    null,
-  );
+interface Certificate {
+  certificateId: string;
+  studentName: string;
+  courseName: string;
+  startDate: string;
+  endDate: string;
+  instituteName: string;
+  instituteAddress: string;
+  certifyingAuthority: string;
+  authorityDesignation: string;
+  authoritySignature: string;
+  instituteLogo: string;
+  grade: string;
+  achievements: string;
+  specialization: string;
+  certificateType: string;
+}
 
-  // Fetch patient list
+const CertificateTab = () => {
+  const [certificates, setCertificates] = useState<string[]>([]);
+  const [selectedCertificateId, setSelectedCertificateId] = useState<Certificate | null>(null);
+
+  // Fetch certificate list
   useEffect(() => {
-    const fetchPatientList = async () => {
+    const fetchCertificateList = async () => {
       const response = await fetch(
-        `${ENDPOINTS.API}/agoric/vstorage/children/published.MedRec.patients`,
+        `${ENDPOINTS.API}/agoric/vstorage/children/published.EdCert.certificates`,
       );
       const data = await response.json();
-      setPatients(data.children);
+      setCertificates(data.children);
       console.log(data.children);
     };
-    fetchPatientList();
+    fetchCertificateList();
   }, []);
 
-  // Fetch individual patient data
-  const fetchMedRec = async (patientId: string) => {
-    setSelectedPatientId(patientId); // Set the selected patient ID
-    const response = await fetch(
-      `${ENDPOINTS.API}/agoric/vstorage/data/published.MedRec.patients.${patientId}`,
-    );
-    let data = await response.json();
-    const parsedData = JSON.parse(data.value);
-    setSelectedMedRec(parsedData.values[0]);
+  // Fetch individual certificate data
+  const fetchCertificate = async (certificateId: string) => {
+    try {
+      setSelectedCertificateId(certificateId);
+      const response = await fetch(
+        `${ENDPOINTS.API}/agoric/vstorage/data/published.EdCert.certificates.${certificateId}`,
+      );
+      const data = await response.json();
+      const parsedData = JSON.parse(data.value);
+      const certificate = JSON.parse(parsedData.values[0]);
+      setSelectedCertificateId(certificate);
+    } catch (error) {
+      console.error('Error fetching certificate:', error);
+      toast.error('Error fetching certificate details', {
+        duration: 5000,
+        position: 'bottom-right',
+      });
+    }
   };
 
   return (
     <div className="view-container">
-      <div className="patient-list-container">
+      <div className="certificate-list-container">
         <h2 className="section-title">
-          <ClipboardList className="icon" /> Patients List
+          <Scroll className="icon" /> Certificates List
         </h2>
-        <ul className="patient-list">
-          {patients.map(patientId => (
-            <li
-              key={patientId}
-              onClick={() => fetchMedRec(patientId)}
-              className={`patient-item ${patientId === selectedPatientId ? 'highlighted' : ''}`}
-            >
-              <User className="patient-icon" />
-              {patientId}
+        <ul className="certificate-list">
+          {certificates.map(certificateId => (
+            <li key={certificateId}>
+              <div
+                onClick={() => fetchCertificate(certificateId)}
+                className={`certificate-item ${certificateId === selectedCertificateId?.certificateId ? 'highlighted' : ''}`}
+              >
+                <Award className="icon" />
+                {certificateId}
+              </div>
             </li>
           ))}
         </ul>
       </div>
 
-      {selectedMedRec && (
-        <div className="patient-details">
-          <h3 className="details-title">Patient Details</h3>
+      {selectedCertificateId && (
+        <div className="certificate-details">
+          <h3 className="details-title">Certificate Details</h3>
           <div className="details-card">
-            {(() => {
-              const data = JSON.parse(selectedMedRec);
-              return (
-                <div className="sections-container">
-                  {/* Personal Information Section */}
-                  <div className="section">
-                    <div className="section-header">
-                      <h2 className="section-title">
-                        Personal Information <UserCircle className="icon" />
-                      </h2>
-                    </div>
-                    <div className="field-grid">
-                      {/* Left Column */}
-                      <div className="field-column">
-                      {data.photo && (
-                          <div className="field photo-field">
-                            <img 
-                              src={data.photo} 
-                              alt="Patient" 
-                              className="photo-preview"
-                              style={{ maxWidth: '200px', marginTop: '0px' }} 
-                            />
-                          </div>
-                        )}
-                        <div className="field">
-                          <label className="label">Patient ID</label>
-                          <input type="text" value={data.patientId} className="input" readOnly />
-                        </div>
-                        
-                      </div>
-                      
-                      {/* Right Column */}
-                      <div className="field-column">
-                        <div className="field">
-                          <label className="label">Full Name</label>
-                          <input type="text" value={data.name} className="input" readOnly />
-                        </div>
-                        <div className="field">
-                          <label className="label">Primary Doctor</label>
-                          <input type="text" value={data.primaryDoctor} className="input" readOnly />
-                        </div>
-                        <div className="field">
-                          <label className="label">Emergency Contact</label>
-                          <input type="text" value={data.emergencyContact} className="input" readOnly />
-                        </div>
-                      </div>
-                    </div>
+            <div className="sections-container">
+              {/* Personal Information Section */}
+              <div className="section">
+                <div className="section-header">
+                  <h2 className="section-title">
+                    Personal Information <UserCheck className="icon" />
+                  </h2>
+                </div>
+                <div className="field-grid">
+                  <div className="field photo-field">
+                    {selectedCertificateId.instituteLogo && (
+                      <img 
+                        src={selectedCertificateId.instituteLogo} 
+                        alt="Institute Logo" 
+                        className="photo-preview"
+                        style={{ maxWidth: '200px', marginTop: '0px' }} 
+                      />
+                    )}
                   </div>
-
-                  {/* Medical Information Section */}
-                  <div className="section">
-                    <div className="section-header">
-                      <h2 className="section-title">
-                        Medical Information <Heart className="icon" />
-                      </h2>
-                    </div>
-                    <div className="field-grid">
-                      <div className="field">
-                        <label className="label">Age</label>
-                        <input type="text" value={data.age} className="input" readOnly />
-                      </div>
-                      <div className="field">
-                        <label className="label">Gender</label>
-                        <input type="text" value={data.gender} className="input" readOnly />
-                      </div>
-                      <div className="field">
-                        <label className="label">Blood Type</label>
-                        <input type="text" value={data.bloodType} className="input" readOnly />
-                      </div>
-                      <div className="field">
-                        <label className="label">Last Visit</label>
-                        <input type="text" value={data.lastVisit} className="input" readOnly />
-                      </div>
-                      <div className="field">
-                        <label className="label">Allergies</label>
-                        <textarea value={data.allergies} className="textarea" readOnly rows={4} />
-                      </div>
-                      <div className="field">
-                        <label className="label">Current Medications</label>
-                        <textarea value={data.medications} className="textarea" readOnly rows={4} />
-                      </div>
-                    </div>
+                  <div className="field">
+                    <label className="label">Certificate ID</label>
+                    <input type="text" value={selectedCertificateId.certificateId} className="input" readOnly />
+                  </div>
+                  
+                </div>
+                
+                {/* Right Column */}
+                <div className="field-column">
+                  <div className="field">
+                    <label className="label">Student Name</label>
+                    <input type="text" value={selectedCertificateId.studentName} className="input" readOnly />
+                  </div>
+                  <div className="field">
+                    <label className="label">Course/Degree Name</label>
+                    <input type="text" value={selectedCertificateId.courseName} className="input" readOnly />
+                  </div>
+                  <div className="field">
+                    <label className="label">Institute Name</label>
+                    <input type="text" value={selectedCertificateId.instituteName} className="input" readOnly />
                   </div>
                 </div>
-              );
-            })()}
+              </div>
+
+              {/* Medical Information Section */}
+              <div className="section">
+                <div className="section-header">
+                  <h2 className="section-title">
+                    Medical Information <Heart className="icon" />
+                  </h2>
+                </div>
+                <div className="field-grid">
+                  <div className="field">
+                    <label className="label">Grade</label>
+                    <input type="text" value={selectedCertificateId.grade} className="input" readOnly />
+                  </div>
+                  <div className="field">
+                    <label className="label">Achievements</label>
+                    <textarea value={selectedCertificateId.achievements} className="textarea" readOnly rows={4} />
+                  </div>
+                  <div className="field">
+                    <label className="label">Specialization</label>
+                    <textarea value={selectedCertificateId.specialization} className="textarea" readOnly rows={4} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="share-link-container">
+            <a 
+              href={`${window.location.origin}/certificate/${selectedCertificateId.certificateId}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="share-button"
+            >
+              🔗 Share Certificate
+            </a>
           </div>
         </div>
       )}
@@ -839,6 +976,17 @@ const PatientTab = () => {
 };
 
 export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/certificate/:certificateId" element={<PublicCertificateView />} />
+        <Route path="/" element={<MainApp />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export function MainApp() {
   const [activeTab, setActiveTab] = useState('form');
   const { wallet } = useAppStore(({ wallet }) => ({ wallet }));
 
@@ -881,8 +1029,8 @@ export default function App() {
       <div className="header">
         <div className="header-content">
           <div className="title-section">
-            <Activity className="icon" />
-            <h1 className="title">Agoric Patient Data Management</h1>
+            <GraduationCap className="icon" />
+            <h1 className="title">Agoric Certificate Management</h1>
           </div>
           <div className="wallet-section">
             <div className="wallet-info">
@@ -922,31 +1070,31 @@ export default function App() {
             className={`nav-tab ${activeTab === 'form' ? 'active' : ''}`}
             onClick={() => setActiveTab('form')}
           >
-            <ClipboardList className="icon" />
-            Register New Patient
+            <Award className="icon" />
+            Register New Certificate
           </div>
           <div
             role="tab"
             className={`nav-tab ${activeTab === 'update' ? 'active' : ''}`}
             onClick={() => setActiveTab('update')}
           >
-            <Activity className="icon" />
-            Update Patient Record
+            <FileText className="icon" />
+            Update Certificate Record
           </div>
           <div
             role="tab"
             className={`nav-tab ${activeTab === 'view' ? 'active' : ''}`}
             onClick={() => setActiveTab('view')}
           >
-            <User className="icon" />
-            View Current Patients
+            <Scroll className="icon" />
+            View Current Certificates
           </div>
         </div>
 
         <div className="tab-content">
-          {activeTab === 'form' ? <MedRecForm /> : 
-           activeTab === 'update' ? <UpdatePatientForm /> : 
-           <PatientTab />}
+          {activeTab === 'form' ? <EdCertForm /> : 
+           activeTab === 'update' ? <UpdateCertificateForm /> : 
+           <CertificateTab />}
         </div>
       </div>
     </div>

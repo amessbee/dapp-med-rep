@@ -1,5 +1,5 @@
 {
-  "name": "med-rec-ui",
+  "name": "ed-cert-ui",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -16,7 +16,8 @@
     "lucide-react": "^0.454.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-hot-toast": "^2.4.1"
+    "react-hot-toast": "^2.4.1",
+    "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
     "@agoric/notifier": "^0.7.0-u16.1",

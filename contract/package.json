@@ -1,5 +1,5 @@
 {
-  "name": "dapp-med-rec-contract",
+  "name": "dapp-ed-cert-contract",
   "version": "0.1.0",
   "private": true,
   "description": "Agoric Orchestration Contract",
@@ -93,7 +93,7 @@
     "files": [
       "test/**/test-*.*",
       "test/**/*.test.*",
-      "!test/med-rec-multichain.test.js"
+      "!test/ed-cert-multichain.test.js"
     ],
     "timeout": "20m",
     "workerThreads": false,

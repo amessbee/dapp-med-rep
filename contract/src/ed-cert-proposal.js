@@ -8,7 +8,7 @@ import { makeTracer } from '../tools/debug.js';
  * @import {ERef} from '@endo/far';
  * @import {BootstrapManifest} from '@agoric/vats/src/core/lib-boot.js';
  * @import {ChainInfo, IBCConnectionInfo,} from '@agoric/orchestration';
- * @import {MedRecSF} from './med-rec-contract.js';
+ * @import {EdCertSF} from './med-rec-contract.js';
  * @import {ContractStartFunction} from '@agoric/zoe/src/zoeService/utils.js';
  */
 
@@ -17,7 +17,7 @@ const { entries, fromEntries } = Object;
 
 trace('start proposal module evaluating');
 
-const contractName = 'MedRec';
+const contractName = 'EdCert';
 
 /** @type {IBCConnectionInfo} */
 const c1 = harden({
@@ -69,14 +69,14 @@ export const allValues = async obj => {
 };
 
 /**
- * @param {BootstrapPowers & {installation: {consume: {MedRec: Installation<MedRecSF>}}}} permittedPowers
+ * @param {BootstrapPowers & {installation: {consume: {EdCert: Installation<EdCertSF>}}}} permittedPowers
  * @param {{options: {[contractName]: {
  *   bundleID: string;
  *   chainDetails: Record<string, ChainInfo>,
  * }}}} config
  */
-export const startMedRecContract = async (permittedPowers, config) => {
-  trace('startMedRecContract()...', config);
+export const startEdCertContract = async (permittedPowers, config) => {
+  trace('startEdCertContract()...', config);
   console.log(permittedPowers);
   console.log(config);
   const {
@@ -90,25 +90,25 @@ export const startMedRecContract = async (permittedPowers, config) => {
       startUpgradable,
     },
     installation: {
-      consume: { MedRec: medRecInstallation },
+      consume: { EdCert: edCertInstallation },
     },
     instance: {
       // @ts-expect-error not a WellKnownName
-      produce: { MedRec: produceInstance },
+      produce: { EdCert: produceInstance },
     },
   } = permittedPowers;
 
-  const installation = await medRecInstallation;
+  const installation = await edCertInstallation;
 
-  const storageNode = await E(chainStorage).makeChildNode('MedRec');
+  const storageNode = await E(chainStorage).makeChildNode('EdCert');
   const marshaller = await E(board).getPublishingMarshaller();
 
   const { chainDetails: nameToInfo = chainDetails } =
     config.options[contractName];
 
-  /** @type {StartUpgradableOpts<ContractStartFunction & MedRecSF>} **/
+  /** @type {StartUpgradableOpts<ContractStartFunction & EdCertSF>} **/
   const startOpts = {
-    label: 'MedRec',
+    label: 'EdCert',
     installation,
     terms: { chainDetails: nameToInfo },
     privateArgs: {
@@ -130,8 +130,8 @@ export const startMedRecContract = async (permittedPowers, config) => {
 };
 
 /** @type {BootstrapManifest} */
-const medRecManifest = {
-  [startMedRecContract.name]: {
+const edCertManifest = {
+  [startEdCertContract.name]: {
     consume: {
       agoricNames: true,
       board: true,
@@ -143,23 +143,23 @@ const medRecManifest = {
       cosmosInterchainService: true,
     },
     installation: {
-      produce: { MedRec: true },
-      consume: { MedRec: true },
+      produce: { EdCert: true },
+      consume: { EdCert: true },
     },
     instance: {
-      produce: { MedRec: true },
+      produce: { EdCert: true },
     },
   },
 };
-harden(medRecManifest);
+harden(edCertManifest);
 
-export const getManifestForMedRec = (
+export const getManifestForEdCert = (
   { restoreRef },
   { installKeys, chainDetails },
 ) => {
-  trace('getManifestForMedRec', installKeys);
+  trace('getManifestForEdCert', installKeys);
   return harden({
-    manifest: medRecManifest,
+    manifest: edCertManifest,
     installations: {
       [contractName]: restoreRef(installKeys[contractName]),
     },
@@ -181,12 +181,12 @@ export const permit = harden({
     cosmosInterchainService: true,
   },
   installation: {
-    consume: { MedRec: true },
-    produce: { MedRec: true },
+    consume: { EdCert: true },
+    produce: { EdCert: true },
   },
-  instance: { produce: { MedRec: true } },
+  instance: { produce: { EdCert: true } },
   brand: { consume: { BLD: true, IST: true }, produce: {} },
   issuer: { consume: { BLD: true, IST: true }, produce: {} },
 });
 
-export const main = startMedRecContract;
+export const main = startEdCertContract;

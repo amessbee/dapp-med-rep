@@ -9,18 +9,7 @@ import {
   InvitationShape,
   EmptyProposalShape,
 } from '@agoric/zoe/src/typeGuards.js';
-import * as flows from './med-rec-flows.js';
-
-/**
- * @import {Marshaller} from '@agoric/internal/src/lib-chainStorage.js';
- * @import {CosmosChainInfo} from '@agoric/orchestration';
- * @import {Vow} from '@agoric/vow';
- * @import {OrchestrationPowers, OrchestrationTools} from '@agoric/orchestration/src/utils/start-helper.js';
- * @import {Zone} from '@agoric/zone';
- */
-
-/// <reference types="@agoric/vats/src/core/types-ambient"/>
-/// <reference types="@agoric/zoe/src/contractFacet/types-ambient"/>
+import * as flows from './ed-cert-flows.js';
 
 const OrchestrationPowersShape = M.splitRecord({
   localchain: M.remotable('localchain'),
@@ -30,7 +19,6 @@ const OrchestrationPowersShape = M.splitRecord({
   agoricNames: M.remotable('agoricNames'),
 });
 
-/** @type {ContractMeta} */
 export const meta = {
   privateArgsShape: M.and(
     OrchestrationPowersShape,
@@ -43,55 +31,42 @@ export const meta = {
   },
 };
 harden(meta);
-const trace = makeTracer('MedRecContract');
+const trace = makeTracer('EdCertContract');
 
-/**
- * @typedef {{
- *   chainDetails: Record<string, CosmosChainInfo>
- * }} MedRecTerms
- *
- * @param {ZCF} zcf
- * @param {OrchestrationPowers & {
- *   marshaller: Marshaller;
- * }} privateArgs
- * @param {Zone} zone
- * @param {OrchestrationTools} tools
- */
 const contract = async (
   zcf,
   privateArgs,
   zone,
   { orchestrateAll, zoeTools, chainHub, vowTools },
 ) => {
-  trace('med-rec start contract');
+  trace('ed-cert start contract');
 
-  // const { maxPatients } = zcf.getTerms();
-  const maxPatients = 100n;
+  const maxCertificates = 1000n;
 
-  // Create storage node for patient data
-  const patientDataRoot = await E(privateArgs.storageNode).makeChildNode(
-    'patients',
+  // Create storage node for certificate data
+  const certificateDataRoot = await E(privateArgs.storageNode).makeChildNode(
+    'certificates',
   );
 
   // Context for flows
   const ctx = {
     vowTools: vowTools,
-    patientDataRoot: patientDataRoot,
-    maxPatients: maxPatients,
+    certificateDataRoot: certificateDataRoot,
+    maxCertificates: maxCertificates,
   };  
 
-  const { publishMedRec } = orchestrateAll(flows, ctx);
+  const { publishEdCert } = orchestrateAll(flows, ctx);
 
   const publicFacet = zone.exo(
-    'MedRec Public Facet',
-    M.interface('MedRec PF', {
+    'EdCert Public Facet',
+    M.interface('EdCert PF', {
       makePublishInvitation: M.callWhen().returns(InvitationShape),
     }),
     {
       makePublishInvitation() {
         return zcf.makeInvitation(
-          publishMedRec,
-          'Publish Patient Data',
+          publishEdCert,
+          'Publish Certificate Data',
           undefined,
           EmptyProposalShape,
         );
@@ -104,5 +79,3 @@ const contract = async (
 
 export const start = withOrchestration(contract);
 harden(start);
-
-/** @typedef {typeof start} MedRecSF */
